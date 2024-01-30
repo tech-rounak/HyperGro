@@ -117,7 +117,53 @@ const GetTopStocks = catchAsync(async(req,res,next)=>{
     const top = await Share.aggregate(stocksPipeline).allowDiskUse(true);
     res.status(201).json({success: true, msg: `Top ${count} Stocks fetched succesfully`,result:top})
 })
-
+const GetLatest = catchAsync(async(req,res,next)=> { 
+    const pipeline = [
+        {
+            $group: {
+                _id:null,
+                maxDate: { $max: "$date" }
+            }
+        },
+        {
+            $project: {
+                maxDate: 1
+            }
+        }
+    ];
+    
+    const dateRange = await Share.aggregate(pipeline);
+    const {maxDate } = dateRange[0];
+    console.log(maxDate);
+    const LatestPipeline = [
+        {
+            $match:{
+                date:maxDate
+            }
+        },
+        { 
+            $addFields: {
+                "difference": {
+                    $subtract: ["$CLOSE","$OPEN"]
+                }
+            }
+        },
+        { $sort : {difference:-1} },
+    ]
+    const latestData = await Share.aggregate(LatestPipeline);
+    console.log(latestData);
+    const len = latestData.length;
+    const resData = [{
+        type:"best",
+        stock:latestData[0],
+    },
+    {
+        type:"worst",
+        stock:latestData[len-1],    
+    }
+]
+    res.status(201).json({success: true, msg: 'Latest Data fetched',result:resData})
+})
 // -------------------------------------- FAVOURITE --------------------------------------------------------------
 const AddFavourite = catchAsync(async(req,res,next)=>{
     const {SC_CODE} = req.body;
@@ -190,4 +236,4 @@ const Refresh = catchAsync(async(req,res,next)=>{
         res.status(201).json({success: true, msg: 'Refresh Succesfull'})
 
 })
-module.exports = {GetShareHistory, GetShareByName, AddFavourite, GetFavourite, GetTopStocks, DeleteFavourite,Refresh}
+module.exports = {GetShareHistory, GetLatest, GetShareByName, AddFavourite, GetFavourite, GetTopStocks, DeleteFavourite,Refresh}

@@ -6,13 +6,15 @@ const {
         GetFavourite,
         DeleteFavourite,
         GetTopStocks,
-        Refresh
+        Refresh,
+        GetLatest
      } = require('../controller/shareController');
 const router = express.Router();
 
 router.get('/topStock',GetTopStocks)
 router.get('/search',GetShareByName)
 router.get('/history',GetShareHistory)
+router.get('/latestBestStock',GetLatest);
 
 router.post('/favourite/create',AddFavourite)
 router.get('/favourite',GetFavourite)

@@ -10,7 +10,7 @@ const { fetchBSEData } = require('./utils/script.js');
 
 (async()=>{
     await connectDB().then(async()=>{
-        await fetchBSEData();
+        // await fetchBSEData();
     })
 })();
 
